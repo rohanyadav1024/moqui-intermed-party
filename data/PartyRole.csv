@@ -1,0 +1,4 @@
+assignment.assign3.party.PartyRole,demo
+partyId,roleTypeId
+P1,Customer
+P2,Supplier

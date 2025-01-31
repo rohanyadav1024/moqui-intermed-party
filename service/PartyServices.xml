@@ -1,0 +1,85 @@
+<services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-3.xsd">
+    <service verb="find" noun="Customer" type="script"
+             location="component://relationshipmgr/service/FindParty.groovy">
+        <in-parameters>
+            <parameter name="emailAddress" required="true"/>
+            <parameter name="firstName"/>
+            <parameter name="lastName"/>
+            <parameter name="contactNumber"/>
+<!--            <parameter name="suffix"/>-->
+
+            <parameter name="address1"/>
+            <parameter name="address2"/>
+            <parameter name="city"/>
+            <parameter name="postalCode"/>
+            <parameter name="countryCode"/>
+            <parameter name="areaCode"/>
+<!--            <parameter name="assetSerialNumber"/>-->
+
+            <parameter name="roleTypeId" default-value="CUSTOMER"/>
+            <parameter name="orderByField" default-value="firstName,organizationName"/>
+            <parameter name="pageIndex" type="Integer" default="0"/>
+            <parameter name="pageSize" type="Integer" default="20"/>
+            <parameter name="pageNoLimit" type="Boolean" default="false"/>
+<!--            <parameter name="leadingWildcard" type="Boolean" default="false"><description>Defaults for false for DB query performance reasons.</description></parameter>-->
+        </in-parameters>
+        <out-parameters>
+            <parameter name="partyIdList" type="List">
+                <parameter name="partyId"/></parameter>
+            <parameter name="partyIdListCount" type="Integer"/>
+            <parameter name="partyIdListPageIndex" type="Integer"/>
+            <parameter name="partyIdListPageSize" type="Integer"/>
+<!--            <parameter name="partyIdListPageMaxIndex" type="Integer"/>-->
+<!--            <parameter name="partyIdListPageRangeLow" type="Integer"/>-->
+<!--            <parameter name="partyIdListPageRangeHigh" type="Integer"/>-->
+        </out-parameters>
+    </service>
+
+    <service verb="create" noun="Customer" type="script"
+             location="component://relationshipmgr/service/CreateParty.groovy">
+        <in-parameters>
+            <parameter name="emailAddress" required="true"/>
+            <parameter name="firstName"/>
+            <parameter name="lastName"/>
+            <parameter name="contactNumber"/>
+<!--            <parameter name="suffix"/>-->
+
+            <parameter name="address1"/>
+            <parameter name="address2"/>
+            <parameter name="city"/>
+            <parameter name="postalCode"/>
+            <parameter name="countryCode"/>
+            <parameter name="areaCode"/>
+
+            <parameter name="roleTypeId" default-value="CUSTOMER"/>
+         </in-parameters>
+        <out-parameters>
+            <parameter name="partyId" type="String"/>
+            <parameter name="emailContactMechId" type="String"/>
+            <parameter name="postalContactMechId" type="String"/>
+            <parameter name="telecomContactMechId" type="String"/>
+    </out-parameters>
+    </service>
+
+    <service verb="update" noun="Customer" type="script"
+             location="component://relationshipmgr/service/UpdateParty.groovy">
+        <in-parameters>
+            <parameter name="emailAddress" required="true"/>
+            <parameter name="firstName"/>
+            <parameter name="lastName"/>
+            <parameter name="contactNumber"/>
+
+            <parameter name="address1"/>
+            <parameter name="address2"/>
+            <parameter name="city"/>
+            <parameter name="postalCode"/>
+            <parameter name="countryCode"/>
+            <parameter name="areaCode"/>
+
+            <parameter name="roleTypeId" default-value="CUSTOMER"/>
+         </in-parameters>
+        <out-parameters>
+            <parameter name="partyId" type="String"/>
+    </out-parameters>
+    </service>
+</services>

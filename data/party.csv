@@ -1,0 +1,6 @@
+assignment.assign3.party.Party,demo
+partyId,partyTypeEnumId
+P1,PtyPerson
+P2,PtyOrganization
+P3,PtyPerson
+P4,PtyOrganization

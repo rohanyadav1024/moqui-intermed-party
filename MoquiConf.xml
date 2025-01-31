@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- No copyright or license for configuration file, details here are not considered a creative work. -->
+<moqui-conf xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/moqui-conf-3.xsd">
+    <datasource group-name="transactional" database-conf-name="mysql" schema-name="">
+        <inline-jdbc pool-minsize="5" pool-maxsize="50">
+            <xa-properties user="moqui" password="moqui" pinGlobalTxToPhysicalConnection="true"
+                           serverName="127.0.0.1" port="3306" databaseName="moqui" autoReconnectForPools="true"
+                           useUnicode="true" encoding="UTF-8"/>
+        </inline-jdbc>
+    </datasource>
+<!--    <webapp-list>-->
+<!--        <webapp name="webroot" require-session-token="false"/>-->
+<!--    </webapp-list>-->
+</moqui-conf>

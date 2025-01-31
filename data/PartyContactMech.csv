@@ -1,0 +1,6 @@
+assignment.assign3.party.contact.PartyContactMech,demo
+partyId,contactMechId,contactMechPurposeId,fromDate,thruDate,comments
+P1,CM1001,PhonePrimary,2025-01-01,2025-12-31,Primary phone contact for customer support
+P2,CM1002,EmailPrimary,2025-01-01,2025-12-31,Primary email address for communications
+P2,CM1003,PostalPrimary,2025-01-01,2025-12-31,Shared address for delivery
+P1,CM1003,PostalShippingDest,2025-01-01,2025-12-31,Shared address for delivery

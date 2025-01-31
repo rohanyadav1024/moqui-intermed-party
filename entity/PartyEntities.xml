@@ -1,0 +1,671 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/entity-definition-3.xsd">
+
+    <entity entity-name="Party" package="assignment.assign3.party" short-alias="parties">
+        <field name="partyId" type="id" is-pk="true"/>
+        <field name="pseudoId" type="text-short" default="partyId"/>
+        <field name="partyTypeEnumId" type="id"/>
+        <field name="disabled" type="text-indicator" enable-audit-log="true" default="'N'"/>
+
+        <field name="dataSourceId" type="id"/>
+        <field name="gatewayCimId" type="text-short" enable-audit-log="update"/>
+<!--        <field name="comments" type="text-long"/>-->
+<!--        <field name="shippingInstructions" type="text-long"/>-->
+        <field name="hasDuplicates" type="text-indicator"/>
+        <field name="lastDupCheckDate" type="date-time"/>
+<!--        <field name="mergedToPartyId" type="id"/>&lt;!&ndash; no fk to avoid circular dependency, set automatically &ndash;&gt;-->
+
+        <relationship type="one" title="PartyType" related="moqui.basic.Enumeration" short-alias="type">
+            <key-map field-name="partyTypeEnumId"/></relationship>
+<!--        <relationship type="one" title="CustomerStatus" related="moqui.basic.StatusItem">-->
+<!--            <key-map field-name="customerStatusId" related="statusId"/></relationship>-->
+<!--        <relationship type="one" title="Owner" related="assignment.assign3.party.Party" short-alias="owner">-->
+<!--            <key-map field-name="ownerPartyId"/></relationship>-->
+        <relationship type="one" related="moqui.basic.DataSource"/>
+
+        <relationship type="one-nofk" related="assignment.assign3.party.Organization" short-alias="organization" mutable="true"/>
+        <relationship type="one-nofk" related="assignment.assign3.party.Person" short-alias="person" mutable="true"/>
+
+        <relationship type="many" related="assignment.assign3.party.PartyRole" short-alias="roles">
+            <key-map field-name="partyId"/></relationship>
+
+        <relationship type="many" related="assignment.assign3.party.contact.PartyContactMech" short-alias="contactMechs">
+            <key-map field-name="partyId"/></relationship>
+
+        <seed-data>
+            <!-- Party Type -->
+            <moqui.basic.EnumerationType description="Party Type" enumTypeId="PartyType"/>
+            <moqui.basic.Enumeration description="Automated Agent" enumId="PtyAutomatedAgent" enumTypeId="PartyType"/>
+            <moqui.basic.Enumeration description="Person" enumId="PtyPerson" enumTypeId="PartyType"/>
+            <moqui.basic.Enumeration description="Organization" enumId="PtyOrganization" enumTypeId="PartyType"/>
+
+            <!-- _NA_ Party -->
+<!--            <Party partyId="_NA_" partyTypeEnumId="PtyPerson"/>-->
+<!--            <Person partyId="_NA_" firstName="Not" lastName="Applicable"/>-->
+        </seed-data>
+
+        <master name="default">
+            <detail relationship="type"/>
+            <detail relationship="organization"/>
+            <detail relationship="person"/>
+            <detail relationship="notes"/>
+            <detail relationship="roles"><detail relationship="role"/></detail>
+
+            <detail relationship="contactMechs">
+                <detail relationship="contactMech" use-master="default"/>
+                <detail relationship="purpose"/>
+            </detail>
+        </master>
+        <master name="basic">
+            <detail relationship="organization"/>
+            <detail relationship="person"/>
+<!--            <detail relationship="identifications"><detail relationship="type"/></detail>-->
+        </master>
+    </entity>
+
+
+
+    <entity entity-name="Organization" package="assignment.assign3.party">
+        <field name="partyId" type="id" is-pk="true"/>
+        <field name="organizationName" type="text-medium"/>
+<!--        <field name="officeSiteName" type="text-medium"/>-->
+<!--        <field name="annualRevenue" type="currency-amount"/>-->
+<!--        <field name="numEmployees" type="number-integer"/>-->
+        <relationship type="one" related="assignment.assign3.party.Party"/>
+<!--        <relationship type="many" title="Owner" related="assignment.assign3.facility.Facility" short-alias="ownerFacilities">-->
+<!--            <key-map field-name="partyId" related="ownerPartyId"/></relationship>-->
+<!--        <index name="PTY_ORG_NAME_IDX"><index-field name="organizationName"/></index>-->
+    </entity>
+
+
+    <entity entity-name="Person" package="assignment.assign3.party">
+        <field name="partyId" type="id" is-pk="true"/>
+        <field name="salutation" type="text-medium"/>
+            <field name="firstName" type="text-medium"/>
+        <field name="middleName" type="text-medium"/>
+        <field name="lastName" type="text-medium" enable-audit-log="update"/>
+        <field name="personalTitle" type="text-medium"/>
+        <field name="suffix" type="text-medium"/>
+        <field name="nickname" type="text-medium"/>
+        <field name="gender" type="text-indicator"/>
+        <field name="birthDate" type="date"/>
+        <field name="deceasedDate" type="date"/>
+        <field name="height" type="number-float"/>
+        <field name="weight" type="number-float"/>
+        <field name="mothersMaidenName" type="text-medium" encrypt="true"/>
+        <field name="maritalStatusEnumId" type="id"/>
+        <field name="employmentStatusEnumId" type="id"/>
+        <field name="residenceStatusEnumId" type="id"/>
+        <field name="occupation" type="text-medium"/>
+        <relationship type="one" related="assignment.assign3.party.Party"/>
+        <relationship type="one" title="MaritalStatus" related="moqui.basic.Enumeration">
+            <key-map field-name="maritalStatusEnumId"/></relationship>
+        <relationship type="one" title="EmploymentStatus" related="moqui.basic.Enumeration">
+            <key-map field-name="employmentStatusEnumId"/></relationship>
+        <relationship type="one" title="ResidenceStatus" related="moqui.basic.Enumeration">
+            <key-map field-name="residenceStatusEnumId"/></relationship>
+        <index name="FIRST_NAME_IDX"><index-field name="firstName"/></index>
+        <index name="LAST_NAME_IDX"><index-field name="lastName"/></index>
+
+        <seed-data>
+            <moqui.basic.EnumerationType description="Marital Status" enumTypeId="MaritalStatus"/>
+            <moqui.basic.Enumeration description="Single" enumId="MarsSingle" enumTypeId="MaritalStatus"/>
+            <moqui.basic.Enumeration description="Married" enumId="MarsMarried" enumTypeId="MaritalStatus"/>
+            <moqui.basic.Enumeration description="Divorced" enumId="MarsDivorced" enumTypeId="MaritalStatus"/>
+            <moqui.basic.Enumeration description="Widowed/Widower" enumId="MarsWidow" enumTypeId="MaritalStatus"/>
+
+            <moqui.basic.EnumerationType description="Employment Status" enumTypeId="EmploymentStatus"/>
+            <moqui.basic.Enumeration description="Full-time Employed" enumId="EmpsFullTime" enumTypeId="EmploymentStatus"/>
+            <moqui.basic.Enumeration description="Part-time Employed" enumId="EmpsPartTime" enumTypeId="EmploymentStatus"/>
+            <moqui.basic.Enumeration description="Self Employed" enumId="EmpsSelf" enumTypeId="EmploymentStatus"/>
+            <moqui.basic.Enumeration description="House-Person" enumId="EmpsHouse" enumTypeId="EmploymentStatus"/>
+            <moqui.basic.Enumeration description="Retired" enumId="EmpsRetired" enumTypeId="EmploymentStatus"/>
+            <moqui.basic.Enumeration description="Student" enumId="EmpsStudent" enumTypeId="EmploymentStatus"/>
+            <moqui.basic.Enumeration description="Unemployed" enumId="EmpsUnemployed" enumTypeId="EmploymentStatus"/>
+
+            <moqui.basic.EnumerationType description="Residence Status" enumTypeId="ResidenceStatus"/>
+            <moqui.basic.Enumeration description="Own Home" enumId="RessOwn" enumTypeId="ResidenceStatus"/>
+            <moqui.basic.Enumeration description="Private Tenant" enumId="RessPrivateTenant" enumTypeId="ResidenceStatus"/>
+            <moqui.basic.Enumeration description="Public Tenant" enumId="RessPublicTenant" enumTypeId="ResidenceStatus"/>
+            <moqui.basic.Enumeration description="With Parents" enumId="RessParents" enumTypeId="ResidenceStatus"/>
+        </seed-data>
+    </entity>
+
+    <entity entity-name="PartyRole" package="assignment.assign3.party">
+        <field name="partyId" type="id" is-pk="true"/>
+        <field name="roleTypeId" type="id" is-pk="true"/>
+        <relationship type="one" related="assignment.assign3.party.Party" short-alias="party"/>
+        <relationship type="one" related="assignment.assign3.party.RoleType" short-alias="role"/>
+        <!-- This relationship is necessary as a backward relationship used in a DataDocument, otherwise wouldn't be needed -->
+<!--        <relationship type="many" title="Vendor" related="assignment.assign3.order.OrderPart">-->
+<!--            <key-map field-name="partyId" related="vendorPartyId"/></relationship>-->
+    </entity>
+    <entity entity-name="RoleGroupMember" package="assignment.assign3.party">
+        <field name="roleGroupEnumId" type="id" is-pk="true"/>
+        <field name="roleTypeId" type="id" is-pk="true"/>
+        <relationship type="one" title="RoleGroup" related="moqui.basic.Enumeration">
+            <key-map field-name="roleGroupEnumId"/></relationship>
+        <relationship type="one" related="assignment.assign3.party.RoleType"/>
+        <seed-data>
+            <moqui.basic.EnumerationType description="Role Group" enumTypeId="RoleGroup"/>
+        </seed-data>
+    </entity>
+    <entity entity-name="RoleType" package="assignment.assign3.party" cache="true">
+        <field name="roleTypeId" type="id" is-pk="true"/>
+        <field name="parentTypeId" type="id"/>
+        <field name="description" type="text-medium"/>
+        <relationship type="one" title="Parent" related="assignment.assign3.party.RoleType">
+            <key-map field-name="parentTypeId" related="roleTypeId"/></relationship>
+        <seed-data>
+            <!-- Role to use when a role is not really applicable for the party association with a record. -->
+            <assignment.assign3.party.RoleType description="Not Applicable" roleTypeId="_NA_"/>
+
+            <!-- General Roles -->
+            <assignment.assign3.party.RoleType description="Agent" roleTypeId="Agent"/>
+            <assignment.assign3.party.RoleType description="Affiliate" roleTypeId="Affiliate"/>
+            <assignment.assign3.party.RoleType description="Asset Owner" roleTypeId="AssetOwner"/>
+            <assignment.assign3.party.RoleType description="Bad Actor (Banned)" roleTypeId="BadActor"/>
+            <assignment.assign3.party.RoleType description="Carrier" roleTypeId="Carrier"/>
+            <assignment.assign3.party.RoleType description="Competitor" roleTypeId="Competitor"/>
+            <assignment.assign3.party.RoleType description="Consumer" roleTypeId="Consumer"/>
+            <assignment.assign3.party.RoleType description="Contractor" roleTypeId="Contractor"/>
+            <assignment.assign3.party.RoleType description="Distributor" roleTypeId="Distributor"/>
+            <assignment.assign3.party.RoleType description="Garnishment Payee" roleTypeId="GarnishmentPayee"/>
+            <assignment.assign3.party.RoleType description="Internet Service Provider" roleTypeId="InternetSp"/>
+            <assignment.assign3.party.RoleType description="Hosting Provider" roleTypeId="HostingProvider"/>
+            <assignment.assign3.party.RoleType description="Manufacturer" roleTypeId="Manufacturer"/>
+            <assignment.assign3.party.RoleType description="Owner"  roleTypeId="Owner"/>
+            <assignment.assign3.party.RoleType description="Partner" roleTypeId="Partner"/>
+            <assignment.assign3.party.RoleType description="Payroll Other Payee" roleTypeId="PayrollOtherPayee"/>
+            <assignment.assign3.party.RoleType description="Prospect" roleTypeId="Prospect"/>
+            <assignment.assign3.party.RoleType description="Referrer" roleTypeId="Referrer"/>
+            <assignment.assign3.party.RoleType description="Sales Account" roleTypeId="Account"/>
+            <assignment.assign3.party.RoleType description="Sales Account Lead" roleTypeId="AccountLead"/>
+            <assignment.assign3.party.RoleType description="Shareholder" roleTypeId="Shareholder"/>
+            <assignment.assign3.party.RoleType description="Subscriber" roleTypeId="Subscriber"/>
+            <assignment.assign3.party.RoleType description="Supplier" roleTypeId="Supplier"/>
+            <assignment.assign3.party.RoleType description="Visitor" roleTypeId="Visitor"/>
+            <assignment.assign3.party.RoleType description="Web Master" roleTypeId="WebMaster"/>
+
+            <!-- Person Roles -->
+            <assignment.assign3.party.RoleType description="Accountant" roleTypeId="Accountant"/>
+            <assignment.assign3.party.RoleType description="Administrator" roleTypeId="Administrator"/>
+            <assignment.assign3.party.RoleType description="Assignee" roleTypeId="Assignee"/>
+            <assignment.assign3.party.RoleType description="Buyer" roleTypeId="Buyer"/>
+            <assignment.assign3.party.RoleType description="Cashier" roleTypeId="Cashier"/>
+            <assignment.assign3.party.RoleType description="Client Billing Rep" roleTypeId="ClientBilling"/>
+            <assignment.assign3.party.RoleType description="Client Manager" roleTypeId="ClientManager"/>
+            <assignment.assign3.party.RoleType description="Email Administrator" roleTypeId="EmailAdmin"/>
+            <assignment.assign3.party.RoleType description="Employee" roleTypeId="Employee"/>
+            <assignment.assign3.party.RoleType description="Executive" roleTypeId="Executive"/>
+            <assignment.assign3.party.RoleType description="Family Member" roleTypeId="FamilyMember"/>
+            <assignment.assign3.party.RoleType description="Human Resources Manager" roleTypeId="HumanResourcesManager"/>
+            <assignment.assign3.party.RoleType description="Inventory Manager" roleTypeId="InventoryManager"/>
+            <assignment.assign3.party.RoleType description="Manager" roleTypeId="Manager"/>
+            <assignment.assign3.party.RoleType description="Operator" roleTypeId="Operator"/>
+            <assignment.assign3.party.RoleType description="Order Clerk" roleTypeId="OrderClerk"/>
+            <assignment.assign3.party.RoleType description="Packer" roleTypeId="Packer"/>
+            <assignment.assign3.party.RoleType description="Payroll" roleTypeId="Payroll"/>
+            <assignment.assign3.party.RoleType description="Picker" roleTypeId="Picker"/>
+            <assignment.assign3.party.RoleType description="Production Manager" roleTypeId="ProductionManager"/>
+            <assignment.assign3.party.RoleType description="Production Worker" roleTypeId="ProductionWorker"/>
+            <assignment.assign3.party.RoleType description="Receiver" roleTypeId="Receiver"/>
+            <assignment.assign3.party.RoleType description="Reporter" roleTypeId="Reporter"/>
+            <assignment.assign3.party.RoleType description="Sales Contact" roleTypeId="Contact"/>
+            <assignment.assign3.party.RoleType description="Sales Representative" roleTypeId="SalesRepresentative"/>
+            <assignment.assign3.party.RoleType description="Shipment Clerk" roleTypeId="ShipmentClerk"/>
+            <assignment.assign3.party.RoleType description="Sponsor" roleTypeId="Sponsor"/>
+            <assignment.assign3.party.RoleType description="Spouse" roleTypeId="Spouse"/>
+            <assignment.assign3.party.RoleType description="Stocker" roleTypeId="Stocker"/>
+            <assignment.assign3.party.RoleType description="Supplier Agent" roleTypeId="SupplierAgent"/>
+            <assignment.assign3.party.RoleType description="Technical Contact" roleTypeId="TechContact"/>
+            <assignment.assign3.party.RoleType description="Watcher" roleTypeId="Watcher"/>
+            <assignment.assign3.party.RoleType description="Worker" roleTypeId="Worker"/>
+
+            <assignment.assign3.party.RoleType description="Business Analyst" roleTypeId="BusinessAnalyst"/>
+            <assignment.assign3.party.RoleType description="Default Assignee" roleTypeId="DefaultAssignee"/>
+            <assignment.assign3.party.RoleType description="Expert User" roleTypeId="ExpertUser"/>
+            <assignment.assign3.party.RoleType description="Programmer" roleTypeId="Programmer"/>
+            <assignment.assign3.party.RoleType description="Programmer Lead" roleTypeId="ProgrammerLead"/>
+            <assignment.assign3.party.RoleType description="Project Manager" roleTypeId="ProjectManager"/>
+            <assignment.assign3.party.RoleType description="Quality Analyst" roleTypeId="QualityAnalyst"/>
+            <assignment.assign3.party.RoleType description="Quality Lead" roleTypeId="QualityLead"/>
+            <assignment.assign3.party.RoleType description="System Administrator" roleTypeId="SysAdmin"/>
+            <assignment.assign3.party.RoleType description="System Architect" roleTypeId="SysArchitect"/>
+            <assignment.assign3.party.RoleType description="UI Designer" roleTypeId="UiDesigner"/>
+
+
+            <moqui.basic.Enumeration description="Person Roles" enumId="RgpPerson" enumTypeId="RoleGroup"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="Accountant"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="Administrator"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="Assignee"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="Buyer"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="Cashier"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="ClientBilling"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="ClientManager"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="Contact"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="EmailAdmin"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="Employee"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="FamilyMember"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="HumanResourcesManager"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="InventoryManager"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="Manager"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="Operator"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="OrderClerk"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="Packer"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="Picker"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="ProductionManager"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="Receiver"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="Reporter"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="SalesRepresentative"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="ShipmentClerk"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="Sponsor"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="Spouse"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="Stocker"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="SupplierAgent"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="Watcher"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="Worker"/>
+
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="BusinessAnalyst"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="DefaultAssignee"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="ExpertUser"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="Programmer"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="ProgrammerLead"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="ProjectManager"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="QualityAnalyst"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="QualityLead"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="SysAdmin"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="SysArchitect"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpPerson" roleTypeId="UiDesigner"/>
+
+            <!-- Organization Roles -->
+            <assignment.assign3.party.RoleType description="Association" roleTypeId="OrgAssociation"/>
+            <assignment.assign3.party.RoleType description="Corporation" roleTypeId="OrgCorporation"/>
+            <assignment.assign3.party.RoleType description="Department" roleTypeId="OrgDepartment"/>
+            <assignment.assign3.party.RoleType description="Division" roleTypeId="OrgDivision"/>
+            <assignment.assign3.party.RoleType description="Employer" roleTypeId="OrgEmployer"/>
+            <assignment.assign3.party.RoleType description="Family" roleTypeId="OrgFamily"/>
+            <assignment.assign3.party.RoleType description="Government" roleTypeId="OrgGovernment"/>
+            <assignment.assign3.party.RoleType description="Government Agency" roleTypeId="OrgGovernmentAgency"/>
+            <assignment.assign3.party.RoleType description="Household" roleTypeId="OrgHousehold"/>
+            <assignment.assign3.party.RoleType description="Internal Organization" roleTypeId="OrgInternal"/>
+            <assignment.assign3.party.RoleType description="Team" roleTypeId="OrgTeam"/>
+            <assignment.assign3.party.RoleType description="Unit" roleTypeId="OrgUnit"/>
+            <assignment.assign3.party.RoleType description="Parent" roleTypeId="OrgParent"/>
+            <assignment.assign3.party.RoleType description="Regulatory Agency" roleTypeId="OrgRegulatoryAgency"/>
+            <assignment.assign3.party.RoleType description="Subsidiary" roleTypeId="OrgSubsidiary"/>
+            <assignment.assign3.party.RoleType description="Tax Authority" roleTypeId="OrgTaxAuthority"/>
+            <assignment.assign3.party.RoleType description="Union" roleTypeId="OrgUnion"/>
+
+            <moqui.basic.Enumeration description="Organization Roles" enumId="RgpOrganization" enumTypeId="RoleGroup"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrganization" roleTypeId="OrgAssociation"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrganization" roleTypeId="OrgCorporation"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrganization" roleTypeId="OrgDepartment"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrganization" roleTypeId="OrgDivision"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrganization" roleTypeId="OrgFamily"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrganization" roleTypeId="OrgGovernment"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrganization" roleTypeId="OrgGovernmentAgency"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrganization" roleTypeId="OrgHousehold"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrganization" roleTypeId="OrgInternal"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrganization" roleTypeId="OrgTeam"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrganization" roleTypeId="OrgUnit"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrganization" roleTypeId="OrgParent"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrganization" roleTypeId="OrgRegulatoryAgency"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrganization" roleTypeId="OrgSubsidiary"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrganization" roleTypeId="OrgTaxAuthority"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrganization" roleTypeId="OrgUnion"/>
+
+            <!-- Calendar Roles -->
+            <assignment.assign3.party.RoleType description="Attendee" roleTypeId="Attendee"/>
+            <assignment.assign3.party.RoleType description="Delegate" roleTypeId="Delegate"/>
+            <assignment.assign3.party.RoleType description="Host" roleTypeId="Host"/>
+            <assignment.assign3.party.RoleType description="Organizer" roleTypeId="Organizer"/>
+
+            <moqui.basic.Enumeration description="Calendar Roles" enumId="RgpCalendar" enumTypeId="RoleGroup"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpCalendar" roleTypeId="Attendee"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpCalendar" roleTypeId="Delegate"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpCalendar" roleTypeId="Host"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpCalendar" roleTypeId="Organizer"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpCalendar" roleTypeId="Owner"/>
+
+            <!-- Customer and Vendor Roles -->
+            <!-- NOTE: these don't use RoleGroupMember because they are an actual hierarchy of roles (Customer and Vendor are valid roles with sub-roles) -->
+            <assignment.assign3.party.RoleType description="Customer" roleTypeId="Customer"/>
+            <assignment.assign3.party.RoleType description="Customer - Bill To" parentTypeId="Customer" roleTypeId="CustomerBillTo"/>
+            <assignment.assign3.party.RoleType description="Customer - End User" parentTypeId="Customer" roleTypeId="CustomerEndUser"/>
+            <assignment.assign3.party.RoleType description="Customer - Placing" parentTypeId="Customer" roleTypeId="CustomerPlacing"/>
+            <assignment.assign3.party.RoleType description="Customer - Ship To" parentTypeId="Customer" roleTypeId="CustomerShipTo"/>
+            <assignment.assign3.party.RoleType description="Vendor" roleTypeId="Vendor"/>
+            <assignment.assign3.party.RoleType description="Vendor - Bill From" parentTypeId="Vendor" roleTypeId="VendorBillFrom"/>
+            <assignment.assign3.party.RoleType description="Vendor - Ship From" parentTypeId="Vendor" roleTypeId="VendorShipFrom"/>
+            <assignment.assign3.party.RoleType description="Vendor - Pick Up From" parentTypeId="Vendor" roleTypeId="VendorPickUpFrom"/>
+
+            <moqui.basic.Enumeration description="Order Roles" enumId="RgpOrder" enumTypeId="RoleGroup"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrder" roleTypeId="Customer"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrder" roleTypeId="CustomerBillTo"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrder" roleTypeId="CustomerEndUser"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrder" roleTypeId="CustomerPlacing"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrder" roleTypeId="CustomerShipTo"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrder" roleTypeId="Vendor"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrder" roleTypeId="VendorBillFrom"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrder" roleTypeId="VendorShipFrom"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrder" roleTypeId="VendorPickUpFrom"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrder" roleTypeId="Supplier"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrder" roleTypeId="Account"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrder" roleTypeId="Agent"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrder" roleTypeId="Affiliate"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrder" roleTypeId="Carrier"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrder" roleTypeId="Competitor"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrder" roleTypeId="Partner"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrder" roleTypeId="Referrer"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrder" roleTypeId="Buyer"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrder" roleTypeId="Cashier"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrder" roleTypeId="ClientBilling"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrder" roleTypeId="OrderClerk"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpOrder" roleTypeId="SalesRepresentative"/>
+
+            <moqui.basic.Enumeration description="Account Contact Roles" enumId="RgpAccountContact" enumTypeId="RoleGroup"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpAccountContact" roleTypeId="Accountant"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpAccountContact" roleTypeId="Buyer"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpAccountContact" roleTypeId="ClientBilling"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpAccountContact" roleTypeId="ClientManager"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpAccountContact" roleTypeId="InventoryManager"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpAccountContact" roleTypeId="Manager"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpAccountContact" roleTypeId="OrderClerk"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpAccountContact" roleTypeId="Owner"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpAccountContact" roleTypeId="Receiver"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpAccountContact" roleTypeId="ProductionManager"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpAccountContact" roleTypeId="SalesRepresentative"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpAccountContact" roleTypeId="ShipmentClerk"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpAccountContact" roleTypeId="SupplierAgent"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpAccountContact" roleTypeId="TechContact"/>
+
+            <moqui.basic.Enumeration description="Directly Applied Roles" enumId="RgpDirect" enumTypeId="RoleGroup"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpDirect" roleTypeId="Customer"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpDirect" roleTypeId="Account"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpDirect" roleTypeId="Contact"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpDirect" roleTypeId="Supplier"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpDirect" roleTypeId="OrgInternal"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpDirect" roleTypeId="Employee"/>
+            <assignment.assign3.party.RoleGroupMember roleGroupEnumId="RgpDirect" roleTypeId="BadActor"/>
+        </seed-data>
+    </entity>
+
+
+    <!-- ========================================================= -->
+    <!-- assignment.assign3.party.contact -->
+    <!-- ========================================================= -->
+
+    <entity entity-name="ContactMech" package="assignment.assign3.party.contact" short-alias="contactMechs" use="nontransactional" cache="never">
+        <field name="contactMechId" type="id" is-pk="true"/>
+        <field name="contactMechTypeEnumId" type="id"/>
+        <field name="dataSourceId" type="id"/>
+        <field name="infoString" type="text-medium"/>
+        <field name="gatewayCimId" type="text-short" enable-audit-log="update"/>
+<!--        <field name="trustLevelEnumId" type="id"/>-->
+        <field name="validateMessage" type="text-medium"/>
+        <field name="paymentFraudEvidenceId" type="id"><description>Refer to evidence here if trustLevelEnumId is gray listed or black listed</description></field>
+        <field name="replacesContactMechId" type="id"><description>For update by copy-on-write this is the ID of the ContactMech it replaces</description></field>
+
+        <relationship type="one" title="ContactMechType" related="moqui.basic.Enumeration" short-alias="type">
+            <key-map field-name="contactMechTypeEnumId"/></relationship>
+        <relationship type="one" related="moqui.basic.DataSource"/>
+<!--        <relationship type="one" title="ContactPaymentTrustLevel" related="moqui.basic.Enumeration" short-alias="trustLevel">-->
+<!--            <key-map field-name="trustLevelEnumId"/></relationship>-->
+<!--        <relationship type="one" related="assignment.assign3.account.payment.PaymentFraudEvidence" short-alias="fraudEvidence" mutable="true"/>-->
+
+        <relationship type="one-nofk" title="Replaces" related="assignment.assign3.party.contact.ContactMech" short-alias="replacesContactMech">
+            <key-map field-name="replacesContactMechId"/></relationship>
+        <relationship type="one-nofk" related="assignment.assign3.party.contact.TelecomNumber" short-alias="telecomNumber" mutable="true"/>
+        <relationship type="one-nofk" related="assignment.assign3.party.contact.PostalAddress" short-alias="postalAddress" mutable="true"/>
+        <relationship type="many" related="assignment.assign3.party.contact.PartyContactMech" short-alias="parties">
+            <key-map field-name="contactMechId"/></relationship>
+
+<!--        <index name="CMECH_INFO_STRING"><index-field name="infoString"/></index>-->
+<!--        <index name="CMECH_REPL_CMECH"><index-field name="replacesContactMechId"/></index>-->
+<!--        <seed-data>-->
+<!--            &lt;!&ndash; NOTE: ContactMechType Enumerations defined above in CommunicationEventType entity &ndash;&gt;-->
+
+<!--            &lt;!&ndash; Contact/Payment Trust Level &ndash;&gt;-->
+<!--            <moqui.basic.EnumerationType description="Contact/Payment Trust Level" enumTypeId="ContactPaymentTrustLevel"/>-->
+<!--            <moqui.basic.Enumeration enumId="CmtlNew" description="New Data" sequenceNum="1" enumTypeId="ContactPaymentTrustLevel"/>-->
+<!--            <moqui.basic.Enumeration enumId="CmtlValid" description="Valid/Complete" sequenceNum="2" enumTypeId="ContactPaymentTrustLevel"/>-->
+<!--            <moqui.basic.Enumeration enumId="CmtlVerified" description="Verified" sequenceNum="3" enumTypeId="ContactPaymentTrustLevel"/>&lt;!&ndash; (with outbound contact or authorization) &ndash;&gt;-->
+<!--            <moqui.basic.Enumeration enumId="CmtlInvalid" description="Invalid" sequenceNum="6" enumTypeId="ContactPaymentTrustLevel"/>-->
+<!--            <moqui.basic.Enumeration enumId="CmtlIncomplete" description="Incomplete" sequenceNum="7" enumTypeId="ContactPaymentTrustLevel"/>-->
+<!--            <moqui.basic.Enumeration enumId="CmtlGreylisted" description="Greylisted" sequenceNum="8" enumTypeId="ContactPaymentTrustLevel"/>-->
+<!--            <moqui.basic.Enumeration enumId="CmtlBlacklisted" description="Blacklisted" sequenceNum="9" enumTypeId="ContactPaymentTrustLevel"/>-->
+<!--        </seed-data>-->
+
+        <master>
+            <detail relationship="telecomNumber"/>
+            <detail relationship="postalAddress">
+                <detail relationship="cityGeo"/>
+                <detail relationship="countyGeo"/>
+                <detail relationship="stateProvinceGeo"/>
+                <detail relationship="postalCodeGeo"/>
+                <detail relationship="countryGeo"/>
+                <detail relationship="telecomContactMech" use-master="default"/>
+                <detail relationship="emailContactMech"/>
+            </detail>
+        </master>
+
+<!--        <seed-data></seed-data>-->
+
+    </entity>
+
+
+
+    <entity entity-name="ContactMechPurpose" package="assignment.assign3.party.contact" use="configuration" cache="true">
+        <field name="contactMechPurposeId" type="id" is-pk="true"/>
+        <field name="contactMechTypeEnumId" type="id"/>
+        <field name="description" type="text-medium"/>
+        <relationship type="one" title="ContactMechType" related="moqui.basic.Enumeration">
+            <key-map field-name="contactMechTypeEnumId"/></relationship>
+        <seed-data>
+            <moqui.basic.EnumerationType description="Contact Mechanism Type" enumTypeId="ContactMechType"/>
+            <moqui.basic.Enumeration enumId="CmtPostalAddress" description="Postal Address" enumTypeId="ContactMechType"/>
+            <moqui.basic.Enumeration enumId="CmtTelecomNumber" description="Phone Number" enumTypeId="ContactMechType"/>
+            <moqui.basic.Enumeration enumId="CmtElectronicAddress" description="Electronic Address" enumTypeId="ContactMechType"/>
+            <moqui.basic.Enumeration enumId="CmtEmailAddress" description="Email Address" parentEnumId="CmtElectronicAddress" enumTypeId="ContactMechType"/>
+            <moqui.basic.Enumeration enumId="CmtIpAddress" description="Internet IP Address" parentEnumId="CmtElectronicAddress" enumTypeId="ContactMechType"/>
+            <moqui.basic.Enumeration enumId="CmtDomainName" description="Internet Domain Name" parentEnumId="CmtElectronicAddress" enumTypeId="ContactMechType"/>
+            <moqui.basic.Enumeration enumId="CmtWebAddress" description="Web URL/Address" parentEnumId="CmtElectronicAddress" enumTypeId="ContactMechType"/>
+            <moqui.basic.Enumeration enumId="CmtWebForm" description="Web Form" parentEnumId="CmtElectronicAddress" enumTypeId="ContactMechType"/>
+
+            <ContactMechPurpose contactMechPurposeId="PostalPrimary" contactMechTypeEnumId="CmtPostalAddress"
+                                description="Postal - Primary"/>
+            <ContactMechPurpose contactMechPurposeId="PostalShippingDest" contactMechTypeEnumId="CmtPostalAddress"
+                                description="Postal - Shipping Destination"/>
+            <ContactMechPurpose contactMechPurposeId="PostalShippingOrigin" contactMechTypeEnumId="CmtPostalAddress"
+                                description="Postal - Shipping Origin"/>
+            <ContactMechPurpose contactMechPurposeId="PostalBilling" contactMechTypeEnumId="CmtPostalAddress"
+                                description="Postal - Billing (AP)"/>
+            <ContactMechPurpose contactMechPurposeId="PostalPayment" contactMechTypeEnumId="CmtPostalAddress"
+                                description="Postal - Payment (AR)"/>
+            <ContactMechPurpose contactMechPurposeId="PostalTax" contactMechTypeEnumId="CmtPostalAddress"
+                                description="Postal - Tax"/>
+            <ContactMechPurpose contactMechPurposeId="PostalGeneral" contactMechTypeEnumId="CmtPostalAddress"
+                                description="Postal - General Correspondence"/>
+            <ContactMechPurpose contactMechPurposeId="PostalPurchReturn" contactMechTypeEnumId="CmtPostalAddress"
+                                description="Postal - Purchase Return"/>
+            <ContactMechPurpose contactMechPurposeId="PostalPrevious" contactMechTypeEnumId="CmtPostalAddress"
+                                description="Postal - Previous"/>
+            <ContactMechPurpose contactMechPurposeId="PostalHome" contactMechTypeEnumId="CmtPostalAddress"
+                                description="Postal - Home"/>
+            <ContactMechPurpose contactMechPurposeId="PostalWork" contactMechTypeEnumId="CmtPostalAddress"
+                                description="Postal - Work"/>
+            <ContactMechPurpose contactMechPurposeId="PostalRetailStore" contactMechTypeEnumId="CmtPostalAddress"
+                                description="Postal - Retail Store"/>
+
+            <ContactMechPurpose contactMechPurposeId="PhonePrimary" contactMechTypeEnumId="CmtTelecomNumber"
+                                description="Phone - Primary"/>
+            <ContactMechPurpose contactMechPurposeId="PhoneShippingDest" contactMechTypeEnumId="CmtTelecomNumber"
+                                description="Phone - Shipping Destination"/>
+            <ContactMechPurpose contactMechPurposeId="PhoneShippingOrigin" contactMechTypeEnumId="CmtTelecomNumber"
+                                description="Phone - Shipping Origin"/>
+            <ContactMechPurpose contactMechPurposeId="PhoneShippingFax" contactMechTypeEnumId="CmtTelecomNumber"
+                                description="Phone - Shipping Fax"/>
+            <ContactMechPurpose contactMechPurposeId="PhoneBilling" contactMechTypeEnumId="CmtTelecomNumber"
+                                description="Phone - Billing (AP)"/>
+            <ContactMechPurpose contactMechPurposeId="PhoneBillingFax" contactMechTypeEnumId="CmtTelecomNumber"
+                                description="Phone - Billing Fax (AP)"/>
+            <ContactMechPurpose contactMechPurposeId="PhonePayment" contactMechTypeEnumId="CmtTelecomNumber"
+                                description="Phone - Payment (AR)"/>
+            <ContactMechPurpose contactMechPurposeId="PhonePaymentFax" contactMechTypeEnumId="CmtTelecomNumber"
+                                description="Phone - Payment Fax (AR)"/>
+            <ContactMechPurpose contactMechPurposeId="PhoneTax" contactMechTypeEnumId="CmtTelecomNumber"
+                                description="Phone - Tax"/>
+            <ContactMechPurpose contactMechPurposeId="PhoneDid" contactMechTypeEnumId="CmtTelecomNumber"
+                                description="Phone - Direct Inward Dialing"/>
+            <ContactMechPurpose contactMechPurposeId="PhoneHome" contactMechTypeEnumId="CmtTelecomNumber"
+                                description="Phone - Home"/>
+            <ContactMechPurpose contactMechPurposeId="PhoneWork" contactMechTypeEnumId="CmtTelecomNumber"
+                                description="Phone - Work"/>
+            <ContactMechPurpose contactMechPurposeId="PhoneFax" contactMechTypeEnumId="CmtTelecomNumber"
+                                description="Phone - Fax"/>
+            <ContactMechPurpose contactMechPurposeId="PhoneMobile" contactMechTypeEnumId="CmtTelecomNumber"
+                                description="Phone - Mobile"/>
+            <ContactMechPurpose contactMechPurposeId="PhoneAssistant" contactMechTypeEnumId="CmtTelecomNumber"
+                                description="Phone - Assistant"/>
+            <ContactMechPurpose contactMechPurposeId="PhoneQuick" contactMechTypeEnumId="CmtTelecomNumber"
+                                description="Phone - Quick Calls"/>
+            <ContactMechPurpose contactMechPurposeId="PhoneRetailStore" contactMechTypeEnumId="CmtTelecomNumber"
+                                description="Phone - Retail Store"/>
+
+            <ContactMechPurpose contactMechPurposeId="EmailPrimary" contactMechTypeEnumId="CmtEmailAddress"
+                                description="Email - Primary Address"/>
+            <ContactMechPurpose contactMechPurposeId="EmailShippingDest" contactMechTypeEnumId="CmtEmailAddress"
+                                description="Email - Shipping Destination"/>
+            <ContactMechPurpose contactMechPurposeId="EmailShippingOrigin" contactMechTypeEnumId="CmtEmailAddress"
+                                description="Email - Shipping Origin"/>
+            <ContactMechPurpose contactMechPurposeId="EmailBilling" contactMechTypeEnumId="CmtEmailAddress"
+                                description="Email - Billing (AP)"/>
+            <ContactMechPurpose contactMechPurposeId="EmailPayment" contactMechTypeEnumId="CmtEmailAddress"
+                                description="Email - Payment (AR)"/>
+            <ContactMechPurpose contactMechPurposeId="EmailOther" contactMechTypeEnumId="CmtEmailAddress"
+                                description="Email - Other"/>
+            <ContactMechPurpose contactMechPurposeId="EmailSupport" contactMechTypeEnumId="CmtEmailAddress"
+                                description="Email - Support"/>
+            <ContactMechPurpose contactMechPurposeId="EmailOrder" contactMechTypeEnumId="CmtEmailAddress"
+                                description="Email - Order Notification"/>
+            <ContactMechPurpose contactMechPurposeId="EmailMarketing" contactMechTypeEnumId="CmtEmailAddress"
+                                description="Email - Marketing"/>
+            <ContactMechPurpose contactMechPurposeId="EmailRetailStore" contactMechTypeEnumId="CmtEmailAddress"
+                                description="Email - Retail Store"/>
+
+            <ContactMechPurpose contactMechPurposeId="WebUrlPrimary" contactMechTypeEnumId="CmtWebAddress"
+                                description="Website URL - Primary"/>
+            <ContactMechPurpose contactMechPurposeId="WebUrlPayment" contactMechTypeEnumId="CmtWebAddress"
+                                description="Website URL - Payment (AR)"/>
+            <ContactMechPurpose contactMechPurposeId="WebRetailStore" contactMechTypeEnumId="CmtWebAddress"
+                                description="Website URL - Retail Store"/>
+            <ContactMechPurpose contactMechPurposeId="WebUrlICal" contactMechTypeEnumId="CmtWebAddress"
+                                description="Website URL - iCal"/>
+
+            <ContactMechPurpose contactMechPurposeId="WebUrlFacebook" contactMechTypeEnumId="CmtWebAddress"
+                                description="Website URL - Facebook"/>
+            <ContactMechPurpose contactMechPurposeId="WebUrlInstagram" contactMechTypeEnumId="CmtWebAddress"
+                                description="Website URL - Instagram"/>
+            <ContactMechPurpose contactMechPurposeId="WebUrlLinkedIn" contactMechTypeEnumId="CmtWebAddress"
+                                description="Website URL - LinkedIn"/>
+            <ContactMechPurpose contactMechPurposeId="WebUrlSnapchat" contactMechTypeEnumId="CmtWebAddress"
+                                description="Website URL - Snapchat"/>
+            <ContactMechPurpose contactMechPurposeId="WebUrlTikTok" contactMechTypeEnumId="CmtWebAddress"
+                                description="Website URL - TikTok"/>
+            <ContactMechPurpose contactMechPurposeId="WebUrlTwitter" contactMechTypeEnumId="CmtWebAddress"
+                                description="Website URL - Twitter"/>
+
+
+
+            <!-- General 'Other' purpose, mainly needed because PartyContactMech.contactMechPurposeId is a PK field, needs a non-null value -->
+            <ContactMechPurpose contactMechPurposeId="Other" contactMechTypeEnumId="" description="Other"/>
+
+            <ContactMechPurpose contactMechPurposeId="IpAddressClient" contactMechTypeEnumId="CmtIpAddress"
+                                description="IP Address - Client"/>
+        </seed-data>
+    </entity>
+
+
+    <entity entity-name="PartyContactMech" package="assignment.assign3.party.contact" use="nontransactional" cache="never">
+        <field name="partyId" type="id" is-pk="true"/>
+        <field name="contactMechId" type="id" is-pk="true"/>
+        <field name="contactMechPurposeId" type="id" is-pk="true"/>
+        <field name="fromDate" type="date-time" is-pk="true"/>
+        <field name="thruDate" type="date-time"/>
+        <field name="extension" type="text-short"/>
+        <field name="comments" type="text-medium"/>
+        <field name="allowSolicitation" type="text-indicator"/>
+        <field name="usedSince" type="date"/>
+        <field name="usedUntil" type="date"/>
+        <field name="verifyCode" type="text-medium" enable-audit-log="true"/>
+        <field name="verifyCodeDate" type="date-time"/>
+        <field name="verifyCodeAttempts" type="number-integer"/>
+        <relationship type="one" related="assignment.assign3.party.Party"/>
+        <relationship type="one" related="assignment.assign3.party.contact.ContactMech" short-alias="contactMech" mutable="true"/>
+        <relationship type="one" related="assignment.assign3.party.contact.ContactMechPurpose" short-alias="purpose"/>
+        <relationship type="one-nofk" related="assignment.assign3.party.contact.PostalAddress" short-alias="postalAddress" mutable="true"/>
+        <relationship type="one-nofk" related="assignment.assign3.party.contact.TelecomNumber" short-alias="telecomNumber" mutable="true"/>
+    </entity>
+
+
+
+    <entity entity-name="PostalAddress" package="assignment.assign3.party.contact" use="nontransactional" cache="never">
+        <field name="contactMechId" type="id" is-pk="true"/>
+        <field name="toName" type="text-medium"/>
+        <field name="attnName" type="text-medium"/>
+        <field name="address1" type="text-medium"/>
+        <field name="address2" type="text-medium"/>
+        <field name="unitNumber" type="text-medium"/>
+        <field name="directions" type="text-long"/>
+        <field name="city" type="text-medium"/>
+<!--        <field name="cityGeoId" type="id"/>-->
+<!--        <field name="schoolDistrictGeoId" type="id"/>-->
+<!--        <field name="countyGeoId" type="id"/>-->
+<!--        <field name="stateProvinceGeoId" type="id"/>-->
+<!--        <field name="countryGeoId" type="id"/>-->
+        <field name="postalCode" type="text-short"/>
+        <field name="postalCodeExt" type="text-short"/>
+<!--        <field name="postalCodeGeoId" type="id"/>-->
+<!--        <field name="geoPointId" type="id"/>-->
+        <field name="commercial" type="text-indicator"/>
+        <field name="accessCode" type="text-short"/>
+<!--        <field name="telecomContactMechId" type="id"/>-->
+<!--        <field name="emailContactMechId" type="id"/>-->
+<!--        <field name="shipGatewayAddressId" type="text-medium"/>-->
+        <relationship type="one" related="assignment.assign3.party.contact.ContactMech"/>
+<!--        <relationship type="one" title="City" related="moqui.basic.Geo" short-alias="cityGeo">-->
+<!--            <key-map field-name="cityGeoId"/></relationship>-->
+<!--        <relationship type="one" title="SchoolDistrict" related="moqui.basic.Geo">-->
+<!--            <key-map field-name="schoolDistrictGeoId"/></relationship>-->
+<!--        <relationship type="one" title="County" related="moqui.basic.Geo" short-alias="countyGeo">-->
+<!--            <key-map field-name="countyGeoId"/></relationship>-->
+<!--        <relationship type="one" title="StateProvince" related="moqui.basic.Geo" short-alias="stateProvinceGeo">-->
+<!--            <key-map field-name="stateProvinceGeoId"/></relationship>-->
+<!--        <relationship type="one" title="Country" related="moqui.basic.Geo" short-alias="countryGeo">-->
+<!--            <key-map field-name="countryGeoId"/></relationship>-->
+<!--        <relationship type="one" title="PostalCode" related="moqui.basic.Geo" short-alias="postalCodeGeo">-->
+<!--            <key-map field-name="postalCodeGeoId"/></relationship>-->
+<!--        <relationship type="one" related="GeoPoint" short-alias="geoPoint"/>-->
+        <relationship type="one-nofk" title="Telecom" related="assignment.assign3.party.contact.ContactMech" short-alias="telecomContactMech" mutable="true">
+            <key-map field-name="telecomContactMechId"/></relationship>
+<!--        <relationship type="one" title="Telecom" related="assignment.assign3.party.contact.TelecomNumber" mutable="true">-->
+<!--            <key-map field-name="telecomContactMechId"/></relationship>-->
+<!--        <relationship type="one" title="Email" related="assignment.assign3.party.contact.ContactMech" short-alias="emailContactMech" mutable="true">-->
+<!--            <key-map field-name="emailContactMechId"/></relationship>-->
+<!--        <index name="CITY_IDX"><index-field name="city"/></index>-->
+<!--        <index name="POSTAL_CODE_IDX"><index-field name="postalCode"/></index>-->
+    </entity>
+
+
+    <entity entity-name="TelecomNumber" package="assignment.assign3.party.contact" use="nontransactional" cache="never">
+        <field name="contactMechId" type="id" is-pk="true"/>
+        <field name="countryCode" type="text-short"/>
+        <field name="areaCode" type="text-short"/>
+        <field name="contactNumber" type="text-short"/>
+        <field name="askForName" type="text-medium"/>
+        <relationship type="one" related="assignment.assign3.party.contact.ContactMech"/>
+<!--        <index name="AREA_CONTACT_IDX"><index-field name="areaCode"/><index-field name="contactNumber"/></index>-->
+    </entity>
+</entities>

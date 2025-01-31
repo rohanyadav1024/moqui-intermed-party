@@ -1,0 +1,4 @@
+assignment.assign3.party.Person,demo
+partyId,firstName,middleName,lastName,gender,birthDate,height,weight,maritalStatusEnumId,employmentStatusEnumId, residenceStatusEnumId
+P1,Rohan,Rakesh,Yadav,M,2004-02-26,165,55,MarsSingle,EmpsSelf,RessOwn
+P3,Devesh,Gowda,Raghuwanshi,M,2003-10-01,162,56,MarsMarried,EmpsStudent,RessPrivateTenant

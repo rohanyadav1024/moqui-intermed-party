@@ -1,0 +1,5 @@
+assignment.assign3.party.contact.ContactMech,demo
+contactMechId,contactMechTypeEnumId,infoString
+CM1001,CmtTelecomNumber,
+CM1002,CmtEmailAddress,rohan.yadav@gmail.com
+CM1003,CmtPostalAddress,
